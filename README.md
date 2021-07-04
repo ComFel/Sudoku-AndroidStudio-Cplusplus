@@ -1,2 +1,2 @@
 # Sudoku
-Wip sudiku c++ game
+Sudoku c++ game With Android Studio
