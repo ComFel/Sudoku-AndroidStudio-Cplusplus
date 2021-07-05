@@ -70,7 +70,6 @@ namespace intro
         void suspend    () override {suspended = true;};
         void resume     () override {suspended = false;};
 
-        //void handle     (basics::Event & event) override;
         void update     (float time) override;
         void render     (basics::Graphics_Context::Accessor & context) override;
 

@@ -17,6 +17,7 @@
 #include <basics/Translation>
 #include "MainMenuScene.h"
 #include "Sample_Scene.hpp"
+#include "Menu_Scene.hpp"
 
 
 using namespace basics;
@@ -161,7 +162,7 @@ namespace intro
 
             state = FINISHED;
 
-            director.run_scene (shared_ptr< Scene >(new MainMenuScene));
+            director.run_scene (shared_ptr< Scene >(new Menu_Scene));
 
         }
     }

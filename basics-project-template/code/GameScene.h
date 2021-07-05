@@ -12,6 +12,9 @@
 #include <basics/Scene>
 #include <basics/Texture_2D>
 #include <basics/Timer>
+#include <basics/Canvas>
+
+#define N 9
 
 namespace Game
 {
@@ -41,7 +44,24 @@ namespace Game
 
         Timer timer;
 
-        Texture_Handle Logo_Texture;
+        struct Box{
+            Texture_Handle textureCell;
+            float x;
+            float y;
+        };
+
+        Box BoxEmpty;
+        Box Box1;
+        Box Box2;
+        Box Box3;
+        Box Box4;
+        Box Box5;
+        Box Box6;
+        Box Box7;
+        Box Box8;
+        Box Box9;
+
+        int sudokuboard[N][N];
 
     public:
 
@@ -53,17 +73,21 @@ namespace Game
         }
 
         bool initialize () override;
-        void suspend    () override {suspended = true;};
-        void resume     () override {suspended = false;};
+        void suspend    () override;
+        void resume     () override;
 
-        //void handle     (basics::Event & event) override;
+        void handle     (basics::Event & event) override;
         void update     (float time) override;
         void render     (basics::Graphics_Context::Accessor & context) override;
 
     private:
 
-        //void load ();
-        //void run  (float time);
+        bool checkColum(int c, int value);
+        bool checkRow(int r, int value);
+        bool checkSquare(int row, int column, int value);
+
+        //void loadTextures();
+
 
     };
 

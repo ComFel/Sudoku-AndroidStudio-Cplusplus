@@ -30,7 +30,7 @@ namespace Menu
     class MainMenuScene : public basics::Scene
     {
 
-        //typedef std::shared_ptr< basics::Texture_2D > Texture_Handle;
+        typedef std::shared_ptr< basics::Texture_2D > Texture_Handle;
 
     public:
 

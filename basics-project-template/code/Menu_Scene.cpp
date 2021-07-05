@@ -1,38 +1,40 @@
 /*
- * INTRO SCENE
- * Copyright © 2021+ Felipe Vallejo Molina
+ * MENU SCENE
+ * Copyright © 2018+ Ángel Rodríguez Ballesteros
  *
  * Distributed under the Boost Software License, version  1.0
  * See documents/LICENSE.TXT or www.boost.org/LICENSE_1_0.txt
  *
- * felipevm07@gmail.com
+ * angel.rodriguez@esne.edu
  */
 
-#include "MainMenuScene.h"
-#include "Sample_Scene.hpp"
+#include "Menu_Scene.hpp"
+//#include "Game_Scene.hpp"
 #include <basics/Canvas>
 #include <basics/Director>
 #include <basics/Transformation>
+#include "GameScene.h"
+#include "Help_Scene.hpp"
 
 using namespace basics;
 using namespace std;
-using namespace Menu;
+using namespace Game;
 using namespace example;
 
-namespace Menu
+namespace example
 {
 
-    MainMenuScene::MainMenuScene()
+    Menu_Scene::Menu_Scene()
     {
         state         = LOADING;
         suspended     = true;
-        canvas_width  = 1280;
-        canvas_height =  720;
+        canvas_width  = 720;
+        canvas_height = 1280;
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    bool MainMenuScene::initialize ()
+    bool Menu_Scene::initialize ()
     {
         for (auto & option : options)
         {
@@ -44,13 +46,13 @@ namespace Menu
 
     // ---------------------------------------------------------------------------------------------
 
-    void MainMenuScene::handle (basics::Event & event)
+    void Menu_Scene::handle (basics::Event & event)
     {
-        if (state == READY) // Se descartan los eventos cuando la escena está LOADING
+        if (state == READY)                     // Se descartan los eventos cuando la escena está LOADING
         {
             switch (event.id)
             {
-                case ID(touch-started): // El usuario toca la pantalla
+                case ID(touch-started):         // El usuario toca la pantalla
                 case ID(touch-moved):
                 {
                     // Se determina qué opción se ha tocado:
@@ -69,7 +71,7 @@ namespace Menu
                     break;
                 }
 
-                case ID(touch-ended): // El usuario deja de tocar la pantalla
+                case ID(touch-ended):           // El usuario deja de tocar la pantalla
                 {
                     // Se "sueltan" todas las opciones:
 
@@ -81,11 +83,11 @@ namespace Menu
 
                     if (option_at (touch_location) == PLAY)
                     {
-                        director.run_scene (shared_ptr< Scene >(new Sample_Scene));
+                        director.run_scene (shared_ptr< Scene >(new GameScene));
                     }
-                    else if (option_at (touch_location) == HELP)
+                    else if(option_at (touch_location) == HELP)
                     {
-                        //director.run_scene (shared_ptr< Scene >(new Help_Scene));
+                        //director.run_scene(shared_ptr<Scene>(new Help_Scene));
                     }
 
                     break;
@@ -96,36 +98,35 @@ namespace Menu
 
     // ---------------------------------------------------------------------------------------------
 
-    void MainMenuScene::update (float time)
+    void Menu_Scene::update (float time)
     {
         if (!suspended) if (state == LOADING)
+        {
+            Graphics_Context::Accessor context = director.lock_graphics_context ();
+
+            if (context)
             {
-                Graphics_Context::Accessor context = director.lock_graphics_context ();
+                // Se carga el atlas:
 
-                if (context)
+                atlas.reset (new Atlas("MainMenu/main-menu.sprites", context));
+
+                // Si el atlas se ha podido cargar el estado es READY y, en otro caso, es ERROR:
+
+                state = atlas->good () ? READY : ERROR;
+
+                // Si el atlas está disponible, se inicializan los datos de las opciones del menú:
+
+                if (state == READY)
                 {
-
-                    // Se carga el atlas:
-
-                    atlas.reset (new Atlas("menu-scene/main-menu.sprites", context));
-
-                    // Si el atlas se ha podido cargar el estado es READY y, en otro caso, es ERROR:
-
-                    state = atlas->good () ? READY : ERROR;
-
-                    // Si el atlas está disponible, se inicializan los datos de las opciones del menú:
-
-                    if (state == READY)
-                    {
-                        OptionsConfig ();
-                    }
+                    configure_options ();
                 }
             }
+        }
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    void MainMenuScene::render (Graphics_Context::Accessor & context)
+    void Menu_Scene::render (Graphics_Context::Accessor & context)
     {
         if (!suspended)
         {
@@ -137,7 +138,7 @@ namespace Menu
 
             if (!canvas)
             {
-                canvas = Canvas::create (ID(canvas), context, {{ canvas_width, canvas_height }});
+                 canvas = Canvas::create (ID(canvas), context, {{ canvas_width, canvas_height }});
             }
 
             // Si el canvas se ha podido obtener o crear, se puede dibujar con él:
@@ -146,7 +147,6 @@ namespace Menu
             {
                 canvas->clear ();
 
-
                 if (state == READY)
                 {
                     // Se dibuja el slice de cada una de las opciones del menú:
@@ -154,13 +154,13 @@ namespace Menu
                     for (auto & option : options)
                     {
                         canvas->set_transform
-                                (
-                                        scale_then_translate_2d
-                                                (
-                                                        option.is_pressed ? 0.75f : 1.f, // Escala de la opción
-                                                        { option.position[0], option.position[1] } // Traslación
-                                                )
-                                );
+                        (
+                            scale_then_translate_2d
+                            (
+                                  option.is_pressed ? 0.75f : 1.f,              // Escala de la opción
+                                { option.position[0], option.position[1] }      // Traslación
+                            )
+                        );
 
                         canvas->fill_rectangle ({ 0.f, 0.f }, { option.slice->width, option.slice->height }, option.slice, CENTER | TOP);
                     }
@@ -176,14 +176,14 @@ namespace Menu
 
     // ---------------------------------------------------------------------------------------------
 
-    void MainMenuScene::OptionsConfig ()
+    void Menu_Scene::configure_options ()
     {
         // Se asigna un slice del atlas a cada opción del menú según su ID:
 
         options[PLAY   ].slice = atlas->get_slice (ID(play)   );
-        options[CREDITS].slice = atlas->get_slice (ID(credits));
-        options[HELP   ].slice = atlas->get_slice (ID(help)   );
         options[SCORES ].slice = atlas->get_slice (ID(scores) );
+        options[HELP   ].slice = atlas->get_slice (ID(help)   );
+        options[CREDITS].slice = atlas->get_slice (ID(credits));
 
         // Se calcula la altura total del menú:
 
@@ -212,20 +212,22 @@ namespace Menu
 
     // ---------------------------------------------------------------------------------------------
 
-    int MainMenuScene::option_at (const Point2f & point)
+    int Menu_Scene::option_at (const Point2f & point)
     {
-        // Comprueba en que opción está el jugador en el menú de pausa
         for (int index = 0; index < number_of_options; ++index)
         {
             const Option & option = options[index];
 
             if
-                    (
-                    point[0] > option.position[0] - option.slice->width  &&
-                    point[0] < option.position[0] + option.slice->width  &&
-                    point[1] > option.position[1] - option.slice->height &&
-                    point[1] < option.position[1] + option.slice->height
-                    ) return index;
+            (
+                point[0] > option.position[0] - option.slice->width  &&
+                point[0] < option.position[0] + option.slice->width  &&
+                point[1] > option.position[1] - option.slice->height &&
+                point[1] < option.position[1] + option.slice->height
+            )
+            {
+                return index;
+            }
         }
 
         return -1;
