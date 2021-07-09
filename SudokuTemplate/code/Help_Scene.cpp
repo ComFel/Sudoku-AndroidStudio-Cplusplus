@@ -118,7 +118,7 @@ namespace example
             {
                 canvas->clear ();
 
-                if(textureHelp && textureHelp){
+                if(textureHelp && textureBack){
                     canvas->fill_rectangle({x,y},{620,1500},textureHelp.get());
                     canvas->fill_rectangle({670,1670},{50,150},textureBack.get());
                 }

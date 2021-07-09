@@ -15,12 +15,12 @@
 #include "GameScene.h"
 #include "Help_Scene.hpp"
 #include "CreditsScene.h"
+#include "Sample_Scene.hpp"
 
 using namespace basics;
 using namespace std;
 using namespace Game;
 using namespace example;
-//using namespace credits;
 
 namespace example
 {

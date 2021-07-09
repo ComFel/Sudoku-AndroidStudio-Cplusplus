@@ -82,9 +82,9 @@ namespace Game
             float height = 130;
             int boxvalue = 0;
 
-            void set_value(int value, std::vector<Texture_Handle> &textures){
+            void set_value(int value, std::vector<Texture_Handle> &texturesBox){
                 boxvalue = value;
-                textureCell = textures[value];
+                textureCell = texturesBox[value];
             }
 
             void render(basics::Canvas &canvas){
@@ -148,7 +148,7 @@ namespace Game
              * En este método se cargan las texturas (una cada fotograma para facilitar que la
              * propia carga se pueda pausar cuando la aplicación pasa a segundo plano).
              */
-        void loadTextures2();
+        void loadTextures();
 
 
 

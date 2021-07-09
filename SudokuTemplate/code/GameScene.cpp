@@ -14,11 +14,8 @@
 #include <basics/Director>
 #include <basics/Transformation>
 
-
-
 using namespace basics;
 using namespace std;
-
 
 namespace Game
 {
@@ -92,7 +89,7 @@ namespace Game
     {
         switch (state)
         {
-            case LOADING: loadTextures2(); break;
+            case LOADING: loadTextures(); break;
             case RUNNING: break;
             case PAUSE: suspend(); break;
             case ERROR: break;
@@ -124,96 +121,13 @@ namespace Game
                 drawNumbers(*canvas);
 
                 state = RUNNING;
-                /*switch (state) {
-                    case LOADING:
-                        render_loading(*canvas);
-                        break;
-                    case RUNNING:
-                        render_playfield(*canvas);
-                        break;
-                    case ERROR:
-                        break;
-                }*/
+
             }
         }
     }
 
-    /*
+
     void GameScene::loadTextures()
-    {
-        if (textures.size () < textures_count)          // Si quedan texturas por cargar...
-        {
-            // Las texturas se cargan y se suben al contexto gráfico, por lo que es necesario disponer
-            // de uno:
-
-            Graphics_Context::Accessor context = director.lock_graphics_context ();
-
-            if (context)
-            {
-                // Se carga la siguiente textura (textures.size() indica cuántas llevamos cargadas):
-
-                Texture_Data   & texture_data = textures_data[textures.size ()];
-                Texture_Handle & texture      = textures[texture_data.id] = Texture_2D::create (texture_data.id, context, texture_data.path);
-
-                // Se comprueba si la textura se ha podido cargar correctamente:
-
-                if (texture) context->add (texture); else state = ERROR;
-
-                // Cuando se han terminado de cargar todas las texturas se pueden crear los sprites que
-                // las usarán e iniciar el juego:
-            }
-        }
-        else
-        if (timer.get_elapsed_seconds () > 1.f)         // Si las texturas se han cargado muy rápido
-        {                                               // se espera un segundo desde el inicio de
-            create_sprites ();                          // la carga antes de pasar al juego para que el mensaje de carga no aparezca y desaparezca demasiado rápido.
-            //restart_game   ();
-            state = RUNNING;
-        }
-    }
-
-    void GameScene::create_sprites ()
-    {
-        // Se crean y configuran los sprites del fondo:
-
-        Sprite_Handle    EmptyCell(new Sprite( textures[ID(CeldaVacia)].get () ));
-
-        EmptyCell->set_anchor   (CENTER | LEFT);
-        EmptyCell->set_position ({ 0, canvas_height });
-
-
-        spriteList.push_back (EmptyCell);
-        EmptyCell->set_scale(.1);
-
-        // Se guardan punteros a los sprites que se van a usar frecuentemente:
-        CeldaVacia    =             EmptyCell.get ();
-    }
-
-    void GameScene::render_loading (Canvas & canvas)
-    {
-        Texture_2D * loading_texture = textures[ID(loading)].get ();
-
-        if (loading_texture)
-        {
-            canvas.fill_rectangle
-                    (
-                            { canvas_width * .5f, canvas_height * .5f },
-                            { loading_texture->get_width (), loading_texture->get_height () },
-                            loading_texture
-                    );
-        }
-    }
-
-    void GameScene::render_playfield (Canvas & canvas)
-    {
-        for (auto & sprite : spriteList)
-        {
-            sprite->render (canvas);
-        }
-    }
-    */
-
-    void GameScene::loadTextures2()
     {
         if (!suspended)
         {
