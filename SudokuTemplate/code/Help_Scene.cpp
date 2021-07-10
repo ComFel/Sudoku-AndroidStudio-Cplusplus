@@ -74,7 +74,7 @@ namespace example
         switch (state)
         {
             case LOADING: load_textures  ();     break;
-            case RUNNING: run  (time); break;
+            case RUNNING: break;
         }
 
     }
@@ -88,7 +88,7 @@ namespace example
                     break;
                 case ID(touch-moved):
                     break;
-                case ID(touch-ended):
+                case ID(touch-ended): ///Cuando el usuario toca la pantalla, carga el menu de nuevo
                     posX = *event[ID(x)].as< var::Float > ();
                     posY = *event[ID(y)].as< var::Float > ();
                     posFinal = {posX, posY};  // Guarda el último punto tocado
@@ -171,8 +171,5 @@ namespace example
         }
     }
 
-    void Help_Scene::run(float time) {
-
-    }
 
 }

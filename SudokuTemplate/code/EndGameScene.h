@@ -1,5 +1,5 @@
 /*
- * INTRO SCENE
+ * ENDGAME SCENE
  * Copyright © 2021+ Felipe Vallejo Molina
  *
  * Distributed under the Boost Software License, version  1.0
@@ -15,14 +15,14 @@
 #include <basics/Texture_2D>
 #include <basics/Timer>
 
-namespace intro
+namespace example
 {
     using basics::Timer;
     using basics::Canvas;
     using basics::Texture_2D;
     using basics::Graphics_Context;
 
-    class IntroScene : public basics::Scene
+    class EndGameScene : public basics::Scene
     {
 
         typedef std::shared_ptr< basics::Texture_2D > Texture_Handle;
@@ -53,7 +53,7 @@ namespace intro
 
     public:
 
-        IntroScene()
+        EndGameScene()
         {
             state         = UNINITIALIZED;
             suspended     = true;

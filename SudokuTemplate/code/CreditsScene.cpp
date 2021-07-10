@@ -87,7 +87,7 @@ namespace example
                     break;
                 case ID(touch-moved):
                     break;
-                case ID(touch-ended):
+                case ID(touch-ended):///Al igual que la escena de ayuda, cuando el usuario toque la pantalla regrasa al menu principal
                     director.run_scene (shared_ptr< Scene >(new Menu_Scene));
                     break;
             }

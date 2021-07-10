@@ -21,6 +21,7 @@
 #include "GameScene.h"
 #include "IntroScene.h"
 #include "Help_Scene.hpp"
+#include "EndGameScene.h"
 
 using namespace basics;
 using namespace example;

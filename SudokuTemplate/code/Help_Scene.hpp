@@ -114,8 +114,6 @@ namespace example
          */
         void load_textures ();
 
-        void run  (float time);
-
     };
 }
 

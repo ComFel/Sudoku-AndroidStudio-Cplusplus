@@ -1,5 +1,5 @@
 /*
- * INTRO SCENE
+ * ENDGAME SCENE
  * Copyright © 2021+ Felipe Vallejo Molina
  *
  * Distributed under the Boost Software License, version  1.0
@@ -7,29 +7,24 @@
  *
  * felipevm07@gmail.com
  */
-
-#include "IntroScene.h"
+#include "EndGameScene.h"
 #include <basics/Canvas>
 #include <basics/Director>
 #include <basics/Log>
 #include <basics/Scaling>
 #include <basics/Rotation>
 #include <basics/Translation>
-#include "MainMenuScene.h"
-#include "Sample_Scene.hpp"
 #include "Menu_Scene.hpp"
 
 
 using namespace basics;
 using namespace std;
-using namespace Menu;
-using namespace intro;
 using namespace example;
 
-namespace intro
+namespace example
 {
 
-    bool IntroScene::initialize()
+    bool EndGameScene::initialize()
     {
         if(state == UNINITIALIZED)
         {
@@ -45,13 +40,12 @@ namespace intro
         return true;
     }
 
-    void IntroScene::update(float time)
+    void EndGameScene::update(float time)
     {
         if(!suspended)
         {
             switch (state)
             {
-                ///Serie de pasos, para realizar un fundido mostrando logo, y luego mostrando el menu principal
                 case LOADING:    update_loading    (); break;
                 case FADING_IN:  update_fading_in  (); break;
                 case WAITING:    update_waiting    (); break;
@@ -62,7 +56,7 @@ namespace intro
 
     }
 
-    void IntroScene::render (basics::Graphics_Context::Accessor & context)
+    void EndGameScene::render (basics::Graphics_Context::Accessor & context)
     {
         if (!suspended)
         {
@@ -82,7 +76,6 @@ namespace intro
                 {
                     canvas->set_opacity (opacity);
 
-                    //Creacion del logo que se muestra en la pantalla
                     canvas->fill_rectangle
                             (
                                     { canvas_width * .5f, canvas_height * .5f },
@@ -95,7 +88,7 @@ namespace intro
         }
     }
 
-    void IntroScene::update_loading ()
+    void EndGameScene::update_loading ()
     {
         Graphics_Context::Accessor context = director.lock_graphics_context ();
 
@@ -103,7 +96,7 @@ namespace intro
         {
             // Se carga la textura del logo:
 
-            Logo_Texture = Texture_2D::create (0, context, "Logo_CFL.png");
+            Logo_Texture = Texture_2D::create (0, context, "EndGame/complete.png");
 
             // Se comprueba si la textura se ha podido cargar correctamente:
 
@@ -121,7 +114,7 @@ namespace intro
         }
     }
 
-    void IntroScene::update_fading_in ()
+    void EndGameScene::update_fading_in ()
     {
         float elapsed_seconds = timer.get_elapsed_seconds ();
 
@@ -138,7 +131,7 @@ namespace intro
         }
     }
 
-    void IntroScene::update_waiting ()
+    void EndGameScene::update_waiting ()
     {
         // Se esperan dos segundos sin hacer nada:
 
@@ -150,7 +143,7 @@ namespace intro
         }
     }
 
-    void IntroScene::update_fading_out ()
+    void EndGameScene::update_fading_out ()
     {
         float elapsed_seconds = timer.get_elapsed_seconds ();
 

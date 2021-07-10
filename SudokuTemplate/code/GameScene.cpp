@@ -16,17 +16,19 @@
 #include <ctime>
 #include <iomanip>
 #include <sstream>
+#include "EndGameScene.h"
 
 using namespace basics;
 using namespace std;
+using namespace example;
 
 namespace Game
 {
 
     GameScene::GameScene()
     {
-        canvas_width = 720;
-        canvas_height = 1280;
+        canvas_width = 1280;
+        canvas_height = 720;
         suspended = false;
     }
 
@@ -38,6 +40,7 @@ namespace Game
         botX = 300;
         botY = 100;
         selectedValue = 0;
+        correctCells = 0;
         gamePaused = false;
         return true;
     }
@@ -66,15 +69,15 @@ namespace Game
                     posY = *event[ID(y)].as< var::Float > ();
                     posFinal = {posX, posY};  // Guarda el último punto tocado
 
-                    Box *touchBoardBox = checkBoardSelection(posFinal);
+                    Box *touchBoardBox = checkBoardSelection(posFinal); //Referencia a la celda del tablero que el usuario selecciona
 
+                    //Comprobamos que no sea null, y si ha pulsado en el tablero o en lo botones
                     if(touchBoardBox)
                     {
-                        touchBoardBox->set_value(selectedValue,textures);
-
+                        touchBoardBox->set_value(selectedValue,textures); //Actualiza el valor de la celda, con su correspondiente textura
                     }
                     else{
-
+                        //Referencia para controlar que boton pulsa el usuario, para recoger el valor del mismo y pintarlo en el tablero
                         Box *touchColumn = checkColumnSelection(posFinal);
 
                         if(touchColumn)
@@ -83,17 +86,14 @@ namespace Game
                         }
                     }
 
+                    //Comprobación de victoria del juego
+                    checkEndGame();
+
                     //Boton PUASE
                     if (posFinal.coordinates.x() > 0 && posFinal.coordinates.y()>0 && posFinal.coordinates.x() < 70 && posFinal.coordinates.y()<200)
                     {
-                        //gamePaused ? state = PAUSE : state = RUNNING;
+                        state = PAUSE;
                         gamePaused = true;
-                        switch (gamePaused) {
-                            case true: state = PAUSE; break;
-                            default: state = RUNNING; break;
-                        }
-
-                        //director.run_scene(shared_ptr<Scene>(new Menu_Scene));
                     }
 
                     break;
@@ -107,8 +107,9 @@ namespace Game
         switch (state)
         {
             case LOADING: loadTextures(); break;
-            case RUNNING: break;
-            case PAUSE: drawGameInfo(*canvasRef); break;
+            case RUNNING: checkEndGame(); break;
+            case WIN: break;
+            case PAUSE: break;
             case ERROR: break;
 
         }
@@ -116,7 +117,7 @@ namespace Game
 
     void GameScene::render(basics::Graphics_Context::Accessor &context)
     {
-        if (!suspended && state == LOADING || state == PAUSE)
+        if (!suspended)
         {
             // El canvas se puede haber creado previamente, en cuyo caso solo hay que pedirlo:
 
@@ -134,11 +135,18 @@ namespace Game
                 canvas->clear();
 
 
-                drawGameInfo(*canvas);
-                drawCells(*canvas);
-                drawNumbers(*canvas);
-
-                state = RUNNING;
+                if (state == PAUSE)
+                {
+                    //Actualiza el canvas durante la pausa
+                    drawGameInfo(*canvas);
+                }
+                else
+                {
+                    //Creamos los elementos visuales de la escena
+                    drawGameInfo(*canvas);
+                    drawCells(*canvas);
+                    drawNumbers(*canvas);
+                }
             }
         }
     }
@@ -152,9 +160,8 @@ namespace Game
 
             if (context)
             {
-                //Forma de crear las texturas de la escena
-
-                textures.push_back(Texture_2D::create(0,context,"SpritesGame/Empty.png"));      //0
+                //Forma de crear las texturas de la escena, se las añade a una lista
+                textures.push_back(Texture_2D::create(0,context,"SpritesGame/Empty.png"));      //0, Para poder reemplazar las texturas por id y asiganarse correspondientemente
                 context->add(textures.back());
                 textures.push_back(Texture_2D::create(0,context,"SpritesGame/Number1.png"));
                 context->add(textures.back());
@@ -175,16 +182,15 @@ namespace Game
                 textures.push_back(Texture_2D::create(0,context,"SpritesGame/Number9.png"));
                 context->add(textures.back());
 
-
-
-                BackButton = Texture_2D::create(0,context,"SpritesGame/PauseButton.png");
-                context->add(BackButton);
+                PauseButton = Texture_2D::create(0,context,"SpritesGame/PauseButton.png");
+                context->add(PauseButton);
 
                 PauseBg = Texture_2D::create(0,context,"SpritesGame/BgPause.png");
                 context->add(PauseBg);
 
                 font.reset (new Raster_Font("fonts/impact.fnt", context));
 
+                //Creación de las texturas del tablero, que toma una matriz / nivel predefinido, a partir de una posición y con un tamaño predefinidos
                 x = 100;
                 y = 100;
                 for (int i = 0; i < N; ++i)
@@ -198,6 +204,8 @@ namespace Game
                     }
                     x+=40;
                 }
+
+                state = RUNNING;
             }
         }
     }
@@ -226,38 +234,40 @@ namespace Game
             botY +=130;
         }
 
+        //Una vez cargado las texturas y valores de los botones, se crean en el canvas
         for (int i = 0; i < 10; ++i) {
             sudokuNumbers[i].render(canvas);
         }
 
     }
 
-    //Creación de los elementos de UI (boton, tiempo, texto)
+    ///Creación de los elementos de UI (boton, tiempo, texto)
     void GameScene::drawGameInfo(basics::Canvas &canvas)
     {
         if(!suspended){
             x = 25;
             y= 100;
-            canvas.fill_rectangle({ x, y }, { 50,150 }, BackButton.get());
+            canvas.fill_rectangle({ x, y }, { 50,150 }, PauseButton.get());
         }
-        if(state == PAUSE){
+        if(gamePaused){ ///Si el juego esta pausado
             x = 25;
             y= 100;
-            if (font)
+            canvas.fill_rectangle({ x, y }, { 50,150 }, PauseButton.get());
+            if (font && PauseBg)
             {
-                // Se dibujan textos con diferentes puntos de anclaje a partir de una cadena simple:
-
+                // Se dibujan textos con diferentes puntos de anclaje a partir de una cadena simple
                 Text_Layout sample_text(*font, L"Pause");
-                canvas.draw_text ({canvas_width/2, canvas_height/2 }, sample_text,    CENTER);
-                canvas.fill_rectangle({ x, y }, { 720,1820 }, PauseBg.get());
-                gamePaused = true;
+                canvas.draw_text ({500, 500}, sample_text,    CENTER);
+                canvas.fill_rectangle({ 500, 500 }, { 720,1820 }, PauseBg.get());
+                gamePaused = false;
+                state = RUNNING;
             }
-
 
         }
 
     }
 
+    ///Comprobamos si el jugador ha tocado la pantalla en el tablero
     GameScene::Box* GameScene::checkBoardSelection(Point2f &posToCheck)
     {
         float posy = posToCheck.coordinates.y();
@@ -267,21 +277,40 @@ namespace Game
         {
             for (int j = 0; j < N; ++j) {
                 if(sudokuboard[i][j].contains(posx,posy))
-                    return &sudokuboard[i][j];
+                    return &sudokuboard[i][j]; ///Devuelve la referencia a la celda del tablero pulsada
             }
         }
         return nullptr;
     }
 
+    ///Comprobamos si el jugador ha tocado la pantalla en los botones numéricos
     GameScene::Box* GameScene::checkColumnSelection(Point2f &posSelect) {
         float posy = posSelect.coordinates.y();
         float posx= posSelect.coordinates.x();
 
         for (int j = 0; j < 10; ++j) {
             if(sudokuNumbers[j].contains(posx,posy))
-                return &sudokuNumbers[j];
+                return &sudokuNumbers[j]; ///Referencia al boton pulsado
         }
         return nullptr;
+    }
+
+    ///Comprobación de victoria
+    bool GameScene::checkEndGame() {
+        for (int i = 0; i < N; ++i) {
+            for (int j = 0; j < N; ++j) {
+                if (sudokuboard[i][j].boxvalue == lvlSol[i][j]) { ///Si el valor de la matriz del nivel, corresponde al de su solución
+                    ++correctCells; ///Condición para victoria
+                }
+            }
+        }
+
+        ///Si todas las celdas se corresponden con la solucion, carga la pantalla de completado
+        if (correctCells != 81)return false;
+        else {
+            director.run_scene(shared_ptr<Scene>(new EndGameScene));
+            return true;
+        }
     }
 
     bool GameScene::checkColum(int j, int value)
@@ -293,7 +322,7 @@ namespace Game
     }
 
     bool GameScene::checkRow(int i, int value) {
-        for (int j = i; j < N; j++)
+        for (int j = 0; j < N; j++)
             if (sudokuboard[0][j].boxvalue == value)
               return true;
         return 0;
@@ -308,12 +337,6 @@ namespace Game
         return 0;
     }
 
-    void GameScene::CellChecks() {
-        //checkSquare();
-    }
 
-    bool canEnter(int r, int c, int value)
-    {
-        //return !checkRow(r, value) && !checkColumn(c, value) && !checkBox(r-r%3,c-c%3,value);
-    }
+
 }
