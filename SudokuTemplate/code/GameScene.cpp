@@ -16,6 +16,7 @@
 #include <ctime>
 #include <iomanip>
 #include <sstream>
+
 #include "EndGameScene.h"
 
 using namespace basics;
@@ -89,11 +90,12 @@ namespace Game
                     //Comprobación de victoria del juego
                     checkEndGame();
 
-                    //Boton PUASE
+                    //Boton Back
                     if (posFinal.coordinates.x() > 0 && posFinal.coordinates.y()>0 && posFinal.coordinates.x() < 70 && posFinal.coordinates.y()<200)
                     {
-                        state = PAUSE;
-                        gamePaused = true;
+                        //state = PAUSE;
+                        //gamePaused = true;
+                        director.run_scene(shared_ptr<Scene>(new Menu_Scene));
                     }
 
                     break;
@@ -182,7 +184,7 @@ namespace Game
                 textures.push_back(Texture_2D::create(0,context,"SpritesGame/Number9.png"));
                 context->add(textures.back());
 
-                PauseButton = Texture_2D::create(0,context,"SpritesGame/PauseButton.png");
+                PauseButton = Texture_2D::create(0,context,"SpritesGame/back_arrow.png");
                 context->add(PauseButton);
 
                 PauseBg = Texture_2D::create(0,context,"SpritesGame/BgPause.png");
@@ -308,7 +310,7 @@ namespace Game
         ///Si todas las celdas se corresponden con la solucion, carga la pantalla de completado
         if (correctCells != 81)return false;
         else {
-            director.run_scene(shared_ptr<Scene>(new EndGameScene));
+            //director.run_scene(shared_ptr<Scene>(new EndGameScene));
             return true;
         }
     }

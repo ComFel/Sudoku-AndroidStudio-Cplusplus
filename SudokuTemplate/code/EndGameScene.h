@@ -53,13 +53,7 @@ namespace example
 
     public:
 
-        EndGameScene()
-        {
-            state         = UNINITIALIZED;
-            suspended     = true;
-            canvas_width  = 1280;
-            canvas_height = 720;
-        };
+        EndGameScene();
 
         basics::Size2u get_view_size () override
         {

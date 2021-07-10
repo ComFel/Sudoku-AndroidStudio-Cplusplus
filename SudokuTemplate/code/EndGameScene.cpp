@@ -23,6 +23,13 @@ using namespace example;
 
 namespace example
 {
+    EndGameScene::EndGameScene()
+    {
+        state         = UNINITIALIZED;
+        suspended     = true;
+        canvas_width  = 1280;
+        canvas_height = 720;
+    }
 
     bool EndGameScene::initialize()
     {
