@@ -55,8 +55,8 @@ namespace example
         canvas_height =  1820;
         state = LOADING;
         suspended = false;
-        y         = 640;
-        x         = 360;
+        y         = 720;
+        x         = 370;
 
         return true;
     }
@@ -68,7 +68,6 @@ namespace example
     void Help_Scene::resume(){
         suspended = false;
     }
-
 
     void Help_Scene::update (float time)
     {
@@ -90,7 +89,14 @@ namespace example
                 case ID(touch-moved):
                     break;
                 case ID(touch-ended):
-                    director.run_scene (shared_ptr< Scene >(new Menu_Scene));
+                    posX = *event[ID(x)].as< var::Float > ();
+                    posY = *event[ID(y)].as< var::Float > ();
+                    posFinal = {posX, posY};  // Guarda el último punto tocado
+
+                    if (posFinal.coordinates.x() > 0 && posFinal.coordinates.y()>0 && posFinal.coordinates.x() < 80 && posFinal.coordinates.y()<250)
+                    {
+                        director.run_scene(shared_ptr<Scene>(new Menu_Scene));
+                    }
                     break;
             }
         }
@@ -119,8 +125,8 @@ namespace example
                 canvas->clear ();
 
                 if(textureHelp && textureBack){
-                    canvas->fill_rectangle({x,y},{620,1500},textureHelp.get());
-                    canvas->fill_rectangle({670,1670},{50,150},textureBack.get());
+                    canvas->fill_rectangle({x,y},{800,1800},textureHelp.get());
+                    canvas->fill_rectangle({25,100},{70,200},textureBack.get());
                 }
 
 

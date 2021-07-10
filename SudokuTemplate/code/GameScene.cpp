@@ -13,6 +13,9 @@
 #include <basics/Canvas>
 #include <basics/Director>
 #include <basics/Transformation>
+#include <ctime>
+#include <iomanip>
+#include <sstream>
 
 using namespace basics;
 using namespace std;
@@ -32,9 +35,10 @@ namespace Game
         state = LOADING;
         x = 10;
         y = 10;
-        botX = 570;
+        botX = 300;
         botY = 100;
-        valorSelect = 0;
+        selectedValue = 0;
+        gamePaused = false;
         return true;
     }
 
@@ -54,29 +58,42 @@ namespace Game
         {
             switch (event.id)
             {
-                case ID(touch-started):
-                {
-                    posX = *event[ID(x)].as< var::Float > ();
-                    posY = *event[ID(y)].as< var::Float > ();
-                    posInicial = {posX, posY};
-
-
-
-                    break;
-                }
-
+                case ID(touch-started):         // El usuario toca la pantalla
+                case ID(touch-moved):
                 case ID(touch-ended):  // El usuario deja de tocar la pantalla
                 {
                     posX = *event[ID(x)].as< var::Float > ();
                     posY = *event[ID(y)].as< var::Float > ();
                     posFinal = {posX, posY};  // Guarda el último punto tocado
 
-                    //valorSelect = checkCellValue(posFinal);
+                    Box *touchBoardBox = checkBoardSelection(posFinal);
+
+                    if(touchBoardBox)
+                    {
+                        touchBoardBox->set_value(selectedValue,textures);
+
+                    }
+                    else{
+
+                        Box *touchColumn = checkColumnSelection(posFinal);
+
+                        if(touchColumn)
+                        {
+                            selectedValue = touchColumn->boxvalue;
+                        }
+                    }
 
                     //Boton PUASE
-                    if (posFinal.coordinates.x() > 0 && posFinal.coordinates.y()>0 && posFinal.coordinates.x() < 70 && posFinal.coordinates.y()<200){
-                        state = PAUSE;
-                        director.run_scene(shared_ptr<Scene>(new Menu_Scene));
+                    if (posFinal.coordinates.x() > 0 && posFinal.coordinates.y()>0 && posFinal.coordinates.x() < 70 && posFinal.coordinates.y()<200)
+                    {
+                        //gamePaused ? state = PAUSE : state = RUNNING;
+                        gamePaused = true;
+                        switch (gamePaused) {
+                            case true: state = PAUSE; break;
+                            default: state = RUNNING; break;
+                        }
+
+                        //director.run_scene(shared_ptr<Scene>(new Menu_Scene));
                     }
 
                     break;
@@ -91,7 +108,7 @@ namespace Game
         {
             case LOADING: loadTextures(); break;
             case RUNNING: break;
-            case PAUSE: suspend(); break;
+            case PAUSE: drawGameInfo(*canvasRef); break;
             case ERROR: break;
 
         }
@@ -99,7 +116,7 @@ namespace Game
 
     void GameScene::render(basics::Graphics_Context::Accessor &context)
     {
-        if (!suspended && state == LOADING)
+        if (!suspended && state == LOADING || state == PAUSE)
         {
             // El canvas se puede haber creado previamente, en cuyo caso solo hay que pedirlo:
 
@@ -116,16 +133,15 @@ namespace Game
             {
                 canvas->clear();
 
+
                 drawGameInfo(*canvas);
                 drawCells(*canvas);
                 drawNumbers(*canvas);
 
                 state = RUNNING;
-
             }
         }
     }
-
 
     void GameScene::loadTextures()
     {
@@ -162,8 +178,12 @@ namespace Game
 
 
                 BackButton = Texture_2D::create(0,context,"SpritesGame/PauseButton.png");
-
                 context->add(BackButton);
+
+                PauseBg = Texture_2D::create(0,context,"SpritesGame/BgPause.png");
+                context->add(PauseBg);
+
+                font.reset (new Raster_Font("fonts/impact.fnt", context));
 
                 x = 100;
                 y = 100;
@@ -173,7 +193,7 @@ namespace Game
                     for (int j = 0; j < N; ++j) {
                         sudokuboard[i][j].x = x;
                         sudokuboard[i][j].y = y;
-                        sudokuboard[i][j].set_value(0,textures);
+                        sudokuboard[i][j].set_value(level[i][j],textures);
                         y+= 130;
                     }
                     x+=40;
@@ -194,14 +214,25 @@ namespace Game
         }
     }
 
-    //Crear los botones para que el usuario decida que valor poner
+    //Crear los botones para que el usuario decida que valor poner/elegir
     void GameScene::drawNumbers(basics::Canvas &canvas)
     {
+        botX = 600;
+        botY = 50;
+        for(int i = 0;i < 10;++i){
+            sudokuNumbers[i].x = botX;
+            sudokuNumbers[i].y = botY;
+            sudokuNumbers[i].set_value(i,textures);
+            botY +=130;
+        }
 
-
+        for (int i = 0; i < 10; ++i) {
+            sudokuNumbers[i].render(canvas);
+        }
 
     }
 
+    //Creación de los elementos de UI (boton, tiempo, texto)
     void GameScene::drawGameInfo(basics::Canvas &canvas)
     {
         if(!suspended){
@@ -209,9 +240,25 @@ namespace Game
             y= 100;
             canvas.fill_rectangle({ x, y }, { 50,150 }, BackButton.get());
         }
+        if(state == PAUSE){
+            x = 25;
+            y= 100;
+            if (font)
+            {
+                // Se dibujan textos con diferentes puntos de anclaje a partir de una cadena simple:
+
+                Text_Layout sample_text(*font, L"Pause");
+                canvas.draw_text ({canvas_width/2, canvas_height/2 }, sample_text,    CENTER);
+                canvas.fill_rectangle({ x, y }, { 720,1820 }, PauseBg.get());
+                gamePaused = true;
+            }
+
+
+        }
+
     }
 
-    GameScene::Box* GameScene::checkCellValue(Point2f &posToCheck)
+    GameScene::Box* GameScene::checkBoardSelection(Point2f &posToCheck)
     {
         float posy = posToCheck.coordinates.y();
         float posx= posToCheck.coordinates.x();
@@ -222,32 +269,20 @@ namespace Game
                 if(sudokuboard[i][j].contains(posx,posy))
                     return &sudokuboard[i][j];
             }
-
         }
         return nullptr;
     }
 
-    int GameScene::getCell(Point2f &posSelect) {
-        sudokuboard[0][0];
-        x = 100;
-        y = 100;
-        for (int i = 0; i < N; ++i) {
-            for (int j = 0; j < N; ++j) {
-                if(sudokuboard[i][j].boxvalue)
-                {
+    GameScene::Box* GameScene::checkColumnSelection(Point2f &posSelect) {
+        float posy = posSelect.coordinates.y();
+        float posx= posSelect.coordinates.x();
 
-                }
-
-            }
+        for (int j = 0; j < 10; ++j) {
+            if(sudokuNumbers[j].contains(posx,posy))
+                return &sudokuNumbers[j];
         }
+        return nullptr;
     }
-
-    void GameScene::drawSelection(int valor, Texture_Handle reTexture) {
-        valor = valorSelect;
-    }
-
-
-
 
     bool GameScene::checkColum(int j, int value)
     {

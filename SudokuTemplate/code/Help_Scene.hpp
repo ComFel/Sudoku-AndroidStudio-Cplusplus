@@ -61,7 +61,9 @@ namespace example
 
         State          state;
         bool           suspended;
-        float          x,y;
+        float          x,y;                                 ///Coordenadas referencia para dibujar las texturas
+        float posX,posY;                                    ///Coordenadas donde pulsa el jugador
+        Point2f posFinal;
 
         unsigned       canvas_width;                        ///< Ancho de la resolución virtual usada para dibujar.
         unsigned       canvas_height;                       ///< Alto  de la resolución virtual usada para dibujar.
